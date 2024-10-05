@@ -11,7 +11,7 @@ app.use(express.json());
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.hflxk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-console.log(uri);
+
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -36,17 +36,23 @@ async function run() {
     })
 
     app.get("/coffees/:id", async(req, res)=>{
-        const id = req.prams.id;
+        const id = req.params.id;
         const query = {_id: new ObjectId(id)}
         const result = await coffeeCollection.findOne(query)
         res.send(result);
     })
 
-
     app.post("/coffees", async(req, res)=>{
         const coffee = req.body;
         const result = await coffeeCollection.insertOne(coffee);
         res.send(result)
+    })
+
+    app.delete("/coffees/:id", async(req, res)=>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)}
+        const result = await coffeeCollection.deleteOne(query);
+        res.send(result);
     })
 
     await client.db("admin").command({ ping: 1 });
