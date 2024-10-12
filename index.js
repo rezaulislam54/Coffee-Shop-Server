@@ -43,11 +43,11 @@ async function run() {
         res.send(result);
     })
 
-    // app.get("/coffees/:email", async(req, res)=>{
-    //   console.log(req.params.email);
-    //   const result = await coffeeCollection.find({email: req.params.email}).toArray();
-    //   res.send(result);
-    // })
+    app.get("/coffees/:email", async(req, res)=>{
+      console.log(req.params.email);
+      const result = await coffeeCollection.find({email: req.params.email}).toArray();
+      res.send(result);
+    })
 
     app.get("/coffees", async(req, res)=>{
       let query = {};
