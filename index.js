@@ -28,6 +28,7 @@ async function run() {
     await client.connect();
 
     const coffeeCollection = client.db('CofeesDB').collection('coffees');
+    const AddToCartCollection = client.db('CofeesDB').collection('myCarts');
    
     app.get("/coffees", async(req, res)=>{
         const cursor = coffeeCollection.find();
@@ -37,15 +38,52 @@ async function run() {
 
     app.get("/coffees/:id", async(req, res)=>{
         const id = req.params.id;
-        const query = {_id: new ObjectId(id)}
+        const query = {_id: new ObjectId(`${id}`)}
         const result = await coffeeCollection.findOne(query)
         res.send(result);
+    })
+
+    // app.get("/coffees/:email", async(req, res)=>{
+    //   console.log(req.params.email);
+    //   const result = await coffeeCollection.find({email: req.params.email}).toArray();
+    //   res.send(result);
+    // })
+
+    app.get("/coffees", async(req, res)=>{
+      let query = {};
+      if(req.query?.email){
+        query = { email: req.query.email }
+      }
+      const result = await coffeeCollection.find(query).toArray();
+      res.send(result);
     })
 
     app.post("/coffees", async(req, res)=>{
         const coffee = req.body;
         const result = await coffeeCollection.insertOne(coffee);
         res.send(result)
+    })
+    
+
+        app.put("/coffees/:id", async(req, res)=>{
+      const id = req.params.id;
+      const coffee = req.body;
+      const filter = {_id: new ObjectId(`${id}`)}
+      const options = { upsert: true };
+      const updatedCoffee = {
+        $set: {
+              name: coffee.name,
+          quantity: coffee.quantity,
+          supplier: coffee.supplier,
+          category: coffee.category,
+          details: coffee.details,
+          taste: coffee.taste,
+          price: coffee.price,
+          Photo: coffee.Photo
+        }
+      }
+      const result = await coffeeCollection.updateOne(filter,updatedCoffee,options);
+      res.send(result);
     })
 
     app.delete("/coffees/:id", async(req, res)=>{
@@ -54,6 +92,36 @@ async function run() {
         const result = await coffeeCollection.deleteOne(query);
         res.send(result);
     })
+
+
+
+  //  My carts section 
+    app.post("/myCarts", async(req, res)=>{
+        const coffee = req.body;
+        const result = await AddToCartCollection.insertOne(coffee);
+        res.send(result)
+    })
+
+    app.get("/myCarts", async(req, res)=>{
+        const cursor = AddToCartCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
+
+    app.get("/myCarts/:email", async(req, res)=>{
+      console.log(req.params.email);
+      const result = await AddToCartCollection.find({email: req.params.email}).toArray();
+      res.send(result);
+    })
+
+     app.delete("/myCarts/:id", async(req, res)=>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)}
+        const result = await AddToCartCollection.deleteOne(query);
+        res.send(result);
+    })
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
